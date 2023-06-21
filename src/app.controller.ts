@@ -20,16 +20,14 @@ export class AppController {
   getAllReports(@Param('type') type: String) {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
-    return data.report.filter((report) => report.type === reportType);
+    return this.appService.getAllReports(reportType);
   }
 
   @Get(':id')
   getReportById(@Param('type') type: String, @Param('id') id: String) {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
-    return data.report
-      .filter((report) => report.type === reportType)
-      .find((report) => report.id === id);
+    return this.appService.getReportById(reportType, id);
   }
 
   @Post()
@@ -37,50 +35,29 @@ export class AppController {
     @Body() { amount, source }: { amount: number; source: string },
     @Param('type') type: String,
   ) {
-    const newReport = {
-      id: uuidv4(),
-      source,
-      amount,
-      created_at: new Date(),
-      updated_at: new Date(),
-      type: type === 'income' ? ReportType.INCOME : ReportType.EXPENSE,
-    };
-    data.report.push(newReport);
-
-    return newReport;
+    const reportType =
+      type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
+    return this.appService.createReport(reportType, { amount, source });
   }
 
   @Put(':id')
   updateReport(
     @Param('type') type: String,
-    @Param('id') id: String,
+    @Param('id') id: string,
     @Body() body: { amount: number; source: string },
   ) {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
-    const reportToUpdate = data.report
-      .filter((report) => report.type === reportType)
-      .find((report) => report.id === id);
 
-    if (!reportToUpdate) return;
-
-    const reportIndex = data.report.findIndex(
-      (report) => report.id === reportToUpdate.id,
-    );
-
-    data.report[reportIndex] = { ...data.report[reportIndex], ...body };
-    return data.report[reportIndex];
+    return this.appService.updateReport(reportType, id, body);
   }
 
   @HttpCode(204)
   @Delete(':id')
-  deleteReport(@Param('id') id: String) {
-    const reportIndex = data.report.findIndex((report) => report.id === id);
+  deleteReport(@Param('id') id: string, @Param('type') type: String) {
+    const reportType =
+      type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
 
-    if (reportIndex === -1) return;
-
-    data.report.splice(reportIndex, 1);
-
-    return 'Deleted';
+    return this.appService.deleteReport(reportType, id);
   }
 }
